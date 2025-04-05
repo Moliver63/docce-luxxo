@@ -1,0 +1,200 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">Editar Joia</h2>
+                    <span class="badge bg-{% if joia.categoria == 'aneis' %}primary{% elif joia.categoria == 'brincos' %}success{% elif joia.categoria == 'pingentes' %}warning{% else %}secondary{% endif %}">
+                        {{ joia.categoria|capitalize }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show">
+                                <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form method="POST" enctype="multipart/form-data" id="editForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nome" class="form-label">Nome da Joia *</label>
+                                    <input type="text" id="nome" name="nome" class="form-control" value="{{ joia.nome }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="preco" class="form-label">Preço (R$) *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">R$</span>
+                                        <input type="number" step="0.01" id="preco" name="preco" class="form-control" value="{{ joia.preco }}" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="categoria" class="form-label">Categoria *</label>
+                                    <select id="categoria" name="categoria" class="form-select" required>
+                                        <option value="aneis" {% if joia.categoria == 'aneis' %}selected{% endif %}>Anéis</option>
+                                        <option value="brincos" {% if joia.categoria == 'brincos' %}selected{% endif %}>Brincos</option>
+                                        <option value="pingentes" {% if joia.categoria == 'pingentes' %}selected{% endif %}>Pingentes</option>
+                                        <option value="colares" {% if joia.categoria == 'colares' %}selected{% endif %}>Colares</option>
+                                        <option value="outros" {% if joia.categoria == 'outros' %}selected{% endif %}>Outros</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="material" class="form-label">Material *</label>
+                                    <input type="text" id="material" name="material" class="form-control" value="{{ joia.material|default('Ouro 18k') }}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Foto Atual</label>
+                                    <div class="card-img-container position-relative" style="height: 200px;">
+                                        <img src="{{ joia.foto }}" alt="{{ joia.nome }}" class="card-img-top h-100" style="object-fit: cover;">
+                                        <div class="card-img-overlay d-flex align-items-end">
+                                            <div>
+                                                <small class="text-white">Clique para visualizar</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="foto" class="form-label">Alterar Foto (opcional)</label>
+                                    <input type="file" id="foto" name="foto" class="form-control" accept="image/*">
+                                    <small class="text-muted">Formatos aceitos: JPG, JPEG, PNG (máx. 5MB)</small>
+                                    <div id="preview-container" class="mt-3">
+                                        <img id="imagePreview" src="#" alt="Pré-visualização da nova imagem" class="img-thumbnail d-none" style="max-height: 200px;">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="pedra" class="form-label">Pedra Principal</label>
+                                    <input type="text" id="pedra" name="pedra" class="form-control" value="{{ joia.pedra|default('Diamante') }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição Detalhada *</label>
+                            <textarea id="descricao" name="descricao" class="form-control" rows="5" required>{{ joia.descricao }}</textarea>
+                            <div class="form-text">Inclua detalhes como materiais, pedras, dimensões e características especiais.</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pré-visualização da nova imagem
+        const fotoInput = document.getElementById('foto');
+        const previewContainer = document.getElementById('imagePreview');
+        
+        fotoInput.addEventListener('change', function() {
+            const file = this.files[0];
+            
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('O arquivo excede o tamanho máximo de 5MB');
+                    this.value = '';
+                    previewContainer.classList.add('d-none');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.addEventListener('load', function() {
+                    previewContainer.src = this.result;
+                    previewContainer.classList.remove('d-none');
+                });
+                
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.classList.add('d-none');
+            }
+        });
+
+        // Validação do formulário
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            const requiredFields = ['nome', 'preco', 'descricao', 'categoria', 'material'];
+            let isValid = true;
+
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Por favor, preencha todos os campos obrigatórios.');
+            }
+        });
+    });
+</script>
+
+<style>
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,.125);
+        font-weight: 600;
+    }
+    .form-control, .form-select {
+        border-radius: 5px;
+        padding: 10px;
+    }
+    .btn {
+        border-radius: 5px;
+        padding: 8px 20px;
+    }
+    .alert {
+        border-radius: 5px;
+    }
+    .card-img-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 5px;
+    }
+    .card-img-overlay {
+        background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .card-img-container:hover .card-img-overlay {
+        opacity: 1;
+    }
+    .is-invalid {
+        border-color: #dc3545;
+    }
+</style>
+{% endblock %}
