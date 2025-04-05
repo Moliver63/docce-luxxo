@@ -7,7 +7,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h2 class="mb-0">Editar Joia</h2>
-                    <span class="badge bg-{% if joia.categoria == 'aneis' %}primary{% elif joia.categoria == 'brincos' %}success{% else %}secondary{% endif %}">
+                    <span class="badge bg-{% if joia.categoria == 'aneis' %}primary{% elif joia.categoria == 'brincos' %}success{% elif joia.categoria == 'pingentes' %}warning{% else %}secondary{% endif %}">
                         {{ joia.categoria|capitalize }}
                     </span>
                 </div>
@@ -45,32 +45,43 @@
                                     <select id="categoria" name="categoria" class="form-select" required>
                                         <option value="aneis" {% if joia.categoria == 'aneis' %}selected{% endif %}>Anéis</option>
                                         <option value="brincos" {% if joia.categoria == 'brincos' %}selected{% endif %}>Brincos</option>
+                                        <option value="pingentes" {% if joia.categoria == 'pingentes' %}selected{% endif %}>Pingentes</option>
                                         <option value="colares" {% if joia.categoria == 'colares' %}selected{% endif %}>Colares</option>
                                         <option value="outros" {% if joia.categoria == 'outros' %}selected{% endif %}>Outros</option>
                                     </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="material" class="form-label">Material *</label>
+                                    <input type="text" id="material" name="material" class="form-control" value="{{ joia.material|default('Ouro 18k') }}" required>
                                 </div>
                             </div>
                             
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Fotos Atuais</label>
-                                    <div class="d-flex flex-wrap gap-3">
-                                        {% for foto in joia.fotos %}
-                                        <div class="position-relative" style="width: 120px;">
-                                            <img src="{{ foto.url }}" alt="{{ joia.nome }}" class="img-thumbnail" style="height: 100px; object-fit: cover;">
-                                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" onclick="confirmarRemocaoFoto('{{ foto.id }}')">
-                                                <i class="fas fa-times"></i>
-                                            </button>
+                                    <label class="form-label">Foto Atual</label>
+                                    <div class="card-img-container position-relative" style="height: 200px;">
+                                        <img src="{{ joia.foto }}" alt="{{ joia.nome }}" class="card-img-top h-100" style="object-fit: cover;">
+                                        <div class="card-img-overlay d-flex align-items-end">
+                                            <div>
+                                                <small class="text-white">Clique para visualizar</small>
+                                            </div>
                                         </div>
-                                        {% endfor %}
                                     </div>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="fotos" class="form-label">Adicionar Mais Fotos</label>
-                                    <input type="file" id="fotos" name="fotos" class="form-control" accept="image/*" multiple>
-                                    <small class="text-muted">Selecione múltiplas fotos (máx. 5MB cada)</small>
-                                    <div id="preview-container" class="d-flex flex-wrap gap-3 mt-3"></div>
+                                    <label for="foto" class="form-label">Alterar Foto (opcional)</label>
+                                    <input type="file" id="foto" name="foto" class="form-control" accept="image/*">
+                                    <small class="text-muted">Formatos aceitos: JPG, JPEG, PNG (máx. 5MB)</small>
+                                    <div id="preview-container" class="mt-3">
+                                        <img id="imagePreview" src="#" alt="Pré-visualização da nova imagem" class="img-thumbnail d-none" style="max-height: 200px;">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="pedra" class="form-label">Pedra Principal</label>
+                                    <input type="text" id="pedra" name="pedra" class="form-control" value="{{ joia.pedra|default('Diamante') }}">
                                 </div>
                             </div>
                         </div>
@@ -98,52 +109,92 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const fotoInput = document.getElementById('fotos');
-        const previewContainer = document.getElementById('preview-container');
+        // Pré-visualização da nova imagem
+        const fotoInput = document.getElementById('foto');
+        const previewContainer = document.getElementById('imagePreview');
         
         fotoInput.addEventListener('change', function() {
-            previewContainer.innerHTML = '';
-            const files = this.files;
+            const file = this.files[0];
             
-            if (files) {
-                Array.from(files).forEach(file => {
-                    if (file.size > 5 * 1024 * 1024) {
-                        alert(`O arquivo ${file.name} excede o tamanho máximo de 5MB`);
-                        return;
-                    }
-                    
-                    const reader = new FileReader();
-                    const previewDiv = document.createElement('div');
-                    previewDiv.className = 'position-relative';
-                    previewDiv.style.width = '120px';
-                    
-                    reader.addEventListener('load', function() {
-                        const img = document.createElement('img');
-                        img.src = this.result;
-                        img.className = 'img-thumbnail';
-                        img.style.height = '100px';
-                        img.style.objectFit = 'cover';
-                        
-                        previewDiv.appendChild(img);
-                        previewContainer.appendChild(previewDiv);
-                    });
-                    
-                    reader.readAsDataURL(file);
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('O arquivo excede o tamanho máximo de 5MB');
+                    this.value = '';
+                    previewContainer.classList.add('d-none');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.addEventListener('load', function() {
+                    previewContainer.src = this.result;
+                    previewContainer.classList.remove('d-none');
                 });
+                
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.classList.add('d-none');
+            }
+        });
+
+        // Validação do formulário
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            const requiredFields = ['nome', 'preco', 'descricao', 'categoria', 'material'];
+            let isValid = true;
+
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Por favor, preencha todos os campos obrigatórios.');
             }
         });
     });
-    
-    function confirmarRemocaoFoto(fotoId) {
-        if (confirm('Tem certeza que deseja remover esta foto?')) {
-            fetch(`/admin/remover-foto/${fotoId}`, {
-                method: 'DELETE',
-            }).then(response => {
-                if (response.ok) {
-                    location.reload();
-                }
-            });
-        }
-    }
 </script>
+
+<style>
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,.125);
+        font-weight: 600;
+    }
+    .form-control, .form-select {
+        border-radius: 5px;
+        padding: 10px;
+    }
+    .btn {
+        border-radius: 5px;
+        padding: 8px 20px;
+    }
+    .alert {
+        border-radius: 5px;
+    }
+    .card-img-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 5px;
+    }
+    .card-img-overlay {
+        background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .card-img-container:hover .card-img-overlay {
+        opacity: 1;
+    }
+    .is-invalid {
+        border-color: #dc3545;
+    }
+</style>
 {% endblock %}

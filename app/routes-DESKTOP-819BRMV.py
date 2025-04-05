@@ -3,6 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from app.models import Joia, Admin, db
 import os
+import uuid  # Adicione esta linha
 from config import Config
 
 # Initialize Blueprints - keeping your original names
@@ -128,66 +129,64 @@ def dashboard():
 @admin.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
-    """Route for uploading new jewelry items"""
     if request.method == 'POST':
         try:
-            print("Iniciando processamento do formulário...")  # DEBUG
-            
-            # Validação dos campos obrigatórios
+            # Verificar campos obrigatórios
             required_fields = ['nome', 'preco', 'descricao', 'categoria']
             for field in required_fields:
                 if not request.form.get(field):
-                    flash(f'The {field} field is required.', 'danger')
-                    return redirect(url_for('admin.upload'))
+                    flash(f'O campo {field} é obrigatório', 'danger')
+                    return redirect(request.url)
             
-            print("Campos do formulário validados...")  # DEBUG
-            
+            # Verificar se o arquivo foi enviado
             if 'foto' not in request.files:
-                flash('No file uploaded.', 'danger')
-                return redirect(url_for('admin.upload'))
+                flash('Nenhuma foto foi enviada', 'danger')
+                return redirect(request.url)
             
             foto = request.files['foto']
-            print(f"Arquivo recebido: {foto.filename}")  # DEBUG
             
+            # Verificar se um arquivo foi selecionado
             if foto.filename == '':
-                flash('No file selected.', 'danger')
-                return redirect(url_for('admin.upload'))
+                flash('Nenhuma foto selecionada', 'danger')
+                return redirect(request.url)
             
-            if not (foto and allowed_file(foto.filename)):
-                flash('Invalid file type. Only JPG, JPEG, PNG allowed.', 'danger')
-                return redirect(url_for('admin.upload'))
+            # Verificar extensão do arquivo
+            allowed_extensions = {'jpg', 'jpeg', 'png'}
+            if not ('.' in foto.filename and 
+                   foto.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
+                flash('Formato de arquivo inválido. Use JPG, JPEG ou PNG', 'danger')
+                return redirect(request.url)
             
-            print("Arquivo validado...")  # DEBUG
+            # Criar diretório se não existir
+            os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
             
-            filename = secure_filename(foto.filename)
-            filepath = os.path.join(Config.UPLOAD_FOLDER, filename)
+            # Gerar nome único para o arquivo
+            file_ext = foto.filename.rsplit('.', 1)[1].lower()
+            unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
+            filepath = os.path.join(Config.UPLOAD_FOLDER, unique_filename)
             
-            print(f"Tentando salvar em: {filepath}")  # DEBUG
-            
-            # Garante que o diretório existe
-            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            # Salvar arquivo
             foto.save(filepath)
             
-            print("Arquivo salvo com sucesso!")  # DEBUG
-            
+            # Criar nova joia
             nova_joia = Joia(
                 nome=request.form['nome'],
                 preco=float(request.form['preco']),
                 descricao=request.form['descricao'],
                 categoria=request.form['categoria'],
-                foto=f'uploads/{filename}'  # Caminho relativo
+                foto=f'/uploads/{unique_filename}'  # Caminho relativo para acesso
             )
             
             db.session.add(nova_joia)
             db.session.commit()
-            flash('Jewelry added successfully!', 'success')
+            
+            flash('Joia cadastrada com sucesso!', 'success')
             return redirect(url_for('admin.dashboard'))
-        
+            
         except Exception as e:
-            print(f"ERRO: {str(e)}")  # DEBUG
             db.session.rollback()
-            flash('Error processing form. Please try again.', 'danger')
-            return redirect(url_for('admin.upload'))
+            flash(f'Erro ao cadastrar joia: {str(e)}', 'danger')
+            return redirect(request.url)
     
     return render_template('admin/upload.html')
 
