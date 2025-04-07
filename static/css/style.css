@@ -1,0 +1,350 @@
+/* Reset e Estilos Globais */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9f9f9;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+.btn {
+    display: inline-block;
+    background: #d4af37; /* Dourado */
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    background: #b38f2a;
+    transform: translateY(-2px);
+}
+
+section {
+    padding: 60px 0;
+}
+
+h1, h2, h3, h4 {
+    margin-bottom: 20px;
+    color: #222;
+}
+
+/* Capa */
+.capa {
+    height: 80vh;
+    background: url('https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+}
+
+.capa-overlay {
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 40px;
+    border-radius: 10px;
+    max-width: 800px;
+}
+
+.capa h1 {
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+}
+
+.capa p {
+    font-size: 1.5rem;
+}
+
+/* Introdução */
+.introducao {
+    background: white;
+    text-align: center;
+}
+
+.introducao p {
+    max-width: 800px;
+    margin: 0 auto 20px;
+}
+
+/* Upload Section */
+.upload-section {
+    background: #f5f5f5;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="file"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.form-group textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+.preview-container {
+    margin-top: 10px;
+    text-align: center;
+}
+
+#preview {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 5px;
+}
+
+/* Coleção */
+.colecao {
+    background: white;
+}
+
+.filtros {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.filtro-btn {
+    background: #eee;
+    color: #333;
+}
+
+.filtro-btn.active {
+    background: #d4af37;
+    color: white;
+}
+
+.joias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.joia-card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.joia-card:hover {
+    transform: translateY(-10px);
+}
+
+.joia-img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.joia-info {
+    padding: 20px;
+}
+
+.joia-info h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.joia-info .preco {
+    color: #d4af37;
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.joia-info .descricao {
+    color: #666;
+    margin-bottom: 15px;
+}
+
+/* Detalhes Técnicos */
+.detalhes {
+    background: #f5f5f5;
+}
+
+.detalhes-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+}
+
+.detalhes ul {
+    list-style-position: inside;
+    margin-left: 20px;
+}
+
+/* Testemunhos */
+.testemunhos {
+    background: white;
+    text-align: center;
+}
+
+.depoimentos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.depoimento {
+    background: #f9f9f9;
+    padding: 30px;
+    border-radius: 10px;
+    position: relative;
+}
+
+.depoimento:before {
+    content: '"';
+    font-size: 80px;
+    color: #d4af37;
+    opacity: 0.2;
+    position: absolute;
+    top: 10px;
+    left: 20px;
+}
+
+.depoimento p {
+    font-style: italic;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.cliente {
+    font-weight: bold;
+    color: #d4af37;
+}
+
+/* Contato */
+.contato {
+    background: #f5f5f5;
+}
+
+.contato-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.info p {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.info i {
+    margin-right: 10px;
+    color: #d4af37;
+}
+
+.social {
+    margin-top: 20px;
+}
+
+.social a {
+    display: inline-block;
+    margin-right: 15px;
+    color: #333;
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.social a:hover {
+    color: #d4af37;
+}
+
+.form-contato input,
+.form-contato textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Informações Adicionais */
+.info-adicional {
+    background: white;
+}
+
+.info-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.pagamentos li {
+    list-style: none;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.pagamentos i {
+    margin-right: 10px;
+    color: #d4af37;
+}
+
+/* Footer */
+footer {
+    background: #222;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .capa h1 {
+        font-size: 2.5rem;
+    }
+    
+    .capa p {
+        font-size: 1.2rem;
+    }
+    
+    section {
+        padding: 40px 0;
+    }
+}

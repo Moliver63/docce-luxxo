@@ -344,7 +344,7 @@
                             </ul>
                         </div>
                         <div class="joia-detail-item">
-                            <button class="btn btn-primary me-2"><i class="fas fa-shopping-cart me-2"></i>Comprar Agora</button>
+                            <button class="btn btn-primary me-2" id="btnComprarAgora"><i class="fas fa-shopping-cart me-2"></i>Comprar Agora</button>
                             <button class="btn btn-outline-primary"><i class="fas fa-heart me-2"></i>Adicionar à Lista de Desejos</button>
                         </div>
                     </div>
@@ -353,7 +353,57 @@
         </div>
     </div>
 
-    <!-- Restante do código permanece igual -->
+    <!-- Modal Pagamento -->
+    <div class="modal fade" id="pagamentoModal" tabindex="-1" aria-labelledby="pagamentoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pagamentoModalLabel">Escolha uma Forma de Pagamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="valorPagamento" class="form-label">Valor a Pagar</label>
+                        <input type="text" class="form-control" id="valorPagamento" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="metodoPagamento" class="form-label">Método de Pagamento</label>
+                        <select class="form-select" id="metodoPagamento">
+                            <option value="pix">PIX</option>
+                            <option value="cartao">Cartão de Crédito</option>
+                        </select>
+                    </div>
+                    <div id="pixContainer" class="mb-3">
+                        <div class="text-center">
+                            <img id="pixQrCode" src="" alt="QR Code PIX" style="max-width: 250px;">
+                            <p class="text-center mt-2">CNPJ: 13.122.473/0001-03</p>
+                        </div>
+                    </div>
+                    <div id="cartaoContainer" style="display: none;">
+                        <div class="mb-3">
+                            <label for="numeroCartao" class="form-label">Número do Cartão</label>
+                            <input type="text" class="form-control" id="numeroCartao">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="validadeCartao" class="form-label">Validade (MM/AA)</label>
+                                <input type="text" class="form-control" id="validadeCartao">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="cvvCartao" class="form-label">CVV</label>
+                                <input type="text" class="form-control" id="cvvCartao">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmarPagamento">Confirmar Pagamento</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Detalhes -->
     <section class="detalhes py-5" id="detalhes">
         <div class="container">
@@ -445,6 +495,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Modal de joia
             const joiaModal = new bootstrap.Modal(document.getElementById('joiaModal'));
+            const pagamentoModal = new bootstrap.Modal(document.getElementById('pagamentoModal'));
             const modalJoiaImg = document.getElementById('modalJoiaImg');
             const modalJoiaNome = document.getElementById('modalJoiaNome');
             const modalJoiaDescricao = document.getElementById('modalJoiaDescricao');
@@ -453,6 +504,10 @@
             const modalJoiaPedra = document.getElementById('modalJoiaPedra');
             const modalJoiaPeso = document.getElementById('modalJoiaPeso');
             const modalJoiaCategoria = document.getElementById('modalJoiaCategoria');
+            const valorPagamento = document.getElementById('valorPagamento');
+            const pixContainer = document.getElementById('pixContainer');
+            const cartaoContainer = document.getElementById('cartaoContainer');
+            const metodoPagamento = document.getElementById('metodoPagamento');
             
             // Evento quando o modal é mostrado
             document.getElementById('joiaModal').addEventListener('show.bs.modal', function(event) {
@@ -508,6 +563,88 @@
                         }
                     });
                 });
+            });
+            
+            // Botão Comprar Agora
+            document.getElementById('btnComprarAgora').addEventListener('click', function() {
+                const preco = parseFloat(modalJoiaPreco.textContent);
+                valorPagamento.value = `R$ ${preco.toFixed(2)}`;
+                pagamentoModal.show();
+            });
+            
+            // Mudança no método de pagamento
+            metodoPagamento.addEventListener('change', function() {
+                if (this.value === 'pix') {
+                    pixContainer.style.display = 'block';
+                    cartaoContainer.style.display = 'none';
+                } else if (this.value === 'cartao') {
+                    pixContainer.style.display = 'none';
+                    cartaoContainer.style.display = 'block';
+                }
+            });
+            
+            // Função para gerar QR Code PIX
+            function gerarPixQrCode() {
+                // Aqui você chamaria a API da Asaas ou outra API para gerar o QR Code
+                // Para fins de exemplo, usaremos um QR Code genérico
+                const qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=13122473000103";
+                document.getElementById('pixQrCode').src = qrCodeUrl;
+            }
+            
+            // Chama a função para gerar o QR Code PIX ao carregar a página
+            gerarPixQrCode();
+            
+            // Botão Confirmar Pagamento
+            document.getElementById('btnConfirmarPagamento').addEventListener('click', function() {
+                const metodo = metodoPagamento.value;
+                const valor = valorPagamento.value.replace('R$ ', '');
+                const nome = modalJoiaNome.textContent;
+                const descricao = modalJoiaDescricao.textContent;
+                const email = 'cliente@exemplo.com'; // 从用户输入获取
+                const telefone = '47999999999'; // 从用户输入获取
+                const cpf_cnpj = '123.456.789-09'; // 从用户输入获取
+
+                if (metodo === 'pix') {
+                    // Chamar API da Asaas para criar pagamento PIX
+                    fetch('/criar-pagamento', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            nome: nome,
+                            email: email,
+                            cpf_cnpj: cpf_cnpj,
+                            telefone: telefone,
+                            valor: valor,
+                            descricao: descricao,
+                            tipo_pagamento: 'PIX'
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('pixQrCode').src = `data:image/png;base64,${data.pix_qr_code}`;
+                            Swal.fire({
+                                title: 'Pagamento PIX Gerado!',
+                                text: 'Escaneie o QR Code para efetuar o pagamento.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            Swal.fire('Erro', data.error, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Erro', 'Ocorreu um erro ao gerar o pagamento', 'error');
+                    });
+                } else if (metodo === 'cartao') {
+                    // Aqui você chamaria a API de processamento de cartão
+                    alert(`Pagamento via Cartão de ${valor} confirmado!`);
+                }
+
+                pagamentoModal.hide();
             });
         });
     </script>
